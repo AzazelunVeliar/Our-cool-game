@@ -849,14 +849,9 @@ MonoBehaviour:
   staminaRecoveryDelay: 2
   dashDistance: 10
   dashSpeed: 50
-  Percentage: 0
+  attackRadius: 2
   jumpForce: 0
-  canJump: 0
-  arrow: {fileID: 0}
-  numder_of_shots: 0
-  max_numder_of_shots: 0
-  script: {fileID: 351151175}
-  after_deth: {fileID: 0}
+  after_death: {fileID: 0}
   bow: {fileID: 0}
 --- !u!65 &351151171
 BoxCollider:
@@ -956,7 +951,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c75733c5b6d352e45b5c6e9316fce328, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  detectionRadius: 50
+  attackRange: 5
+  moveSpeed: 15
+  attackRadius: 5
+  Enemy_attack: 10
   player: {fileID: 543450652265314229}
+  animator: {fileID: 0}
+  canAttack: 1
 --- !u!54 &351151176
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7342,6 +7344,7 @@ GameObject:
   - component: {fileID: 1629912481}
   - component: {fileID: 1629912480}
   - component: {fileID: 1629912479}
+  - component: {fileID: 1629912483}
   m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
@@ -7435,6 +7438,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1629912483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629912478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 23800000, guid: c36e7062bec5b734facdbab1561e0c66, type: 2}
+  m_BuildHeightMesh: 0
 --- !u!1 &1642756624
 GameObject:
   m_ObjectHideFlags: 0
@@ -7939,14 +7973,9 @@ MonoBehaviour:
   staminaRecoveryDelay: 2
   dashDistance: 10
   dashSpeed: 50
-  Percentage: 1
+  attackRadius: 2
   jumpForce: 0
-  canJump: 0
-  arrow: {fileID: 726495284}
-  numder_of_shots: 0
-  max_numder_of_shots: 0
-  script: {fileID: 1797216145}
-  after_deth: {fileID: 726495284}
+  after_death: {fileID: 0}
   bow: {fileID: 726495284}
 --- !u!114 &1797216145
 MonoBehaviour:
@@ -7960,7 +7989,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c75733c5b6d352e45b5c6e9316fce328, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  detectionRadius: 50
+  attackRange: 5
+  moveSpeed: 15
+  attackRadius: 5
+  Enemy_attack: 10
   player: {fileID: 543450652265314229}
+  animator: {fileID: 0}
+  canAttack: 1
 --- !u!65 &1797216146
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8600,7 +8636,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c75733c5b6d352e45b5c6e9316fce328, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  detectionRadius: 50
+  attackRange: 5
+  moveSpeed: 15
+  attackRadius: 5
+  Enemy_attack: 10
   player: {fileID: 543450652265314229}
+  animator: {fileID: 1950577868}
+  canAttack: 1
 --- !u!114 &1950577861
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8627,14 +8670,9 @@ MonoBehaviour:
   staminaRecoveryDelay: 2
   dashDistance: 10
   dashSpeed: 50
-  Percentage: 0
+  attackRadius: 2
   jumpForce: 0
-  canJump: 0
-  arrow: {fileID: 726495284}
-  numder_of_shots: 0
-  max_numder_of_shots: 0
-  script: {fileID: 1950577860}
-  after_deth: {fileID: 726495284}
+  after_death: {fileID: 0}
   bow: {fileID: 726495284}
 --- !u!54 &1950577863
 Rigidbody:
@@ -11102,7 +11140,7 @@ GameObject:
   - component: {fileID: 4242436416720499486}
   m_Layer: 0
   m_Name: "\u0421\u0444\u0435\u0440\u0430.001"
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
