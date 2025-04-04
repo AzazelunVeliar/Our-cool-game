@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
@@ -29,15 +30,27 @@ public class Enemy : MonoBehaviour
     private Animator animator;
     [SerializeField] GameObject after_death;
     [SerializeField] GameObject bow;
+    public Slider enemyslider;
 
     void Start()
     {
-
+        Enemy_hp = Enemy_maxhp;
     }
 
     void Update()
     {
-
+        UpdateHealthBar();
     }
-
+    void UpdateHealthBar()
+    {
+        enemyslider.value = Enemy_hp;
+        if (Enemy_hp <= 0)
+        {
+            GameObject.Destroy(gameObject);
+        }
+    }
+    private void FixedUpdate()
+    {
+        Update();
+    }
 }

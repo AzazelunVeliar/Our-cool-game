@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,6 +40,9 @@ public class Player : MonoBehaviour
     private float shotDelay = 2.5f;
     [SerializeField] GameObject bow;
     [SerializeField] GameObject aim;
+    private float meleeAttackCooldown = 1.2f; // Время между атаками
+    private float lastMeleeAttackTime = 0f;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -89,11 +93,13 @@ public class Player : MonoBehaviour
         //if (is_it_white == true) { is_it_black = false;}
         if (Input.GetMouseButtonDown(0) && Attacking)
         {
-            if (enemy != null)
+            if (enemy != null && Time.time - lastMeleeAttackTime >= meleeAttackCooldown)
             {
                 Attack(enemy);
+                lastMeleeAttackTime = Time.time;
             }
         }
+
         if (Figure_type == "pawn" & white_pawn_percentage != 0 & is_it_white == true)
         {
             Skill(Figure_type);
@@ -251,6 +257,7 @@ public class Player : MonoBehaviour
             black_rook_percentage = 100;
         }
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Enemy")
