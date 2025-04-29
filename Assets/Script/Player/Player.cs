@@ -1,256 +1,78 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.AI;
+using UnityEngine.UI;
+[System.Serializable]
+public class PlayerSaveData
+{
+    public Vector3 position;
+    public int hp;
+}
 public class Player : MonoBehaviour
 {
-    public double Maxhp;
+    public int Maxhp;
     public double Stamina;
-    public double hp;
+    public int hp;
     public int att;
+    public int matt;
     private Animator animator;
-    public string Figure_type;
-    public bool is_it_black;
-    public bool is_it_white;
-    public double white_pawn_percentage;
-    public double white_king_percentage;
-    public double white_queen_percentage;
-    public double white_horse_percentage;
-    public double white_rook_percentage;
-    public double white_bispo_percentage;
-    public double black_pawn_percentage;
-    public double black_king_percentage;
-    public double black_queen_percentage;
-    public double black_horse_percentage;
-    public double black_rook_percentage;
-    public double black_bispo_percentage;
     private Enemy enemy;
     private PlayerController PC;
-    public double point;
-    public Transform arrowSpawnPoint;
-    public float force;
-    [SerializeField] GameObject arrow;
     private bool Attacking;
-    public Transform cameraTransform;
-    private float timeSinceMouseDown = 0f;
-    private float maxForce = 300f;
-    private float lastShotTime = 0f;
-    private float shotDelay = 2.5f;
-    [SerializeField] GameObject bow;
-    [SerializeField] GameObject aim;
+    private float meleeAttackCooldown = 1.2f;
+    private float lastMeleeAttackTime = 0f;
+    public Slider playerslider;
+    public GameObject projectilePrefab;
+    public float projectileSpeed = 10f;
+    private float rangedAttackCooldown = 2f;
+    private float lastRangedAttackTime = 0f;
+    public Slider healthSlider;
+
     void Start()
     {
         animator = GetComponent<Animator>();
-        Maxhp = hp;
-        //is_it_white = true;
         PC = GetComponent<PlayerController>();
     }
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && Figure_type == "horse")
-        {
-            timeSinceMouseDown = 0f;
-            bow.SetActive(true);
-            aim.SetActive(true);
-        }
-        else if (Input.GetMouseButton(0) && Figure_type == "horse")
-        {
-            timeSinceMouseDown += Time.deltaTime;
-            if (Time.time - lastShotTime >= shotDelay)
-            {
-                ShootArrow();
-            }
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            timeSinceMouseDown = 0f;
-            bow.SetActive(false);
-            aim.SetActive(false);
-        }
+        UpdateHealthBar();
         if (Input.GetMouseButtonDown(0))
         {
             animator.SetBool("Punching", true);
+            if (Attacking && Time.time - lastMeleeAttackTime >= meleeAttackCooldown)
+            {
+                Attack(enemy);
+                lastMeleeAttackTime = Time.time;
+            }
         }
         else
         {
             animator.SetBool("Punching", false);
         }
-        if(hp<=0)
+        if (Input.GetMouseButtonDown(1) && Time.time - lastRangedAttackTime >= rangedAttackCooldown) // Added cooldown check
         {
-            SceneManager.LoadScene("Main Menu");
+            animator.SetBool("Shooting", true);
+            RangedAttack();
+            lastRangedAttackTime = Time.time; // Update the last attack time
+        }
+        else
+        {
+            animator.SetBool("Shooting", false);
+        }
+        if (hp <= 0)
+        {
+            SceneManager.LoadScene("Restart");
         }
         if (hp > 100) { hp = 100; }
         if (hp < 0) { hp = 0; }
         if (Stamina < 0) { Stamina = 0; }
         Stamina = Stamina + 0.01;
         if (Stamina > 100) { Stamina = 100; }
-        //if(is_it_black==true){is_it_white = false;}
-        //if (is_it_white == true) { is_it_black = false;}
-        if (Input.GetMouseButtonDown(0) && Attacking)
-        {
-            if (enemy != null)
-            {
-                Attack(enemy);
-            }
-        }
-        if (Figure_type == "pawn" & white_pawn_percentage != 0 & is_it_white == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "pawn" & white_pawn_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "king" & white_king_percentage != 0 & is_it_white == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "king" & white_king_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "queen" & white_queen_percentage != 0 & is_it_white == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "queen" & white_queen_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "horse" & white_horse_percentage != 0 & is_it_white == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "horse" & white_horse_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "rook" & white_rook_percentage != 0 & is_it_white == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "rook" & white_rook_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "bispo" & white_bispo_percentage != 0 & is_it_white == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "bispo" & white_bispo_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "pawn" & black_pawn_percentage != 0 & is_it_black == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "pawn" & black_pawn_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "king" & black_king_percentage != 0 & is_it_black == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "king" & black_king_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "queen" & black_queen_percentage != 0 & is_it_black == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "queen" & black_queen_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "horse" & black_horse_percentage != 0 & is_it_black == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "horse" & black_horse_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "rook" & black_rook_percentage != 0 & is_it_black == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "rook" & black_rook_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (Figure_type == "bispo" & black_bispo_percentage != 0 & is_it_black == true)
-        {
-            Skill(Figure_type);
-            if (Figure_type == "bispo" & black_bispo_percentage > 50)
-            {
-                Skill2(Figure_type);
-            }
-        }
-        if (white_rook_percentage > 100)
-        {
-            point = white_rook_percentage - 100;
-            white_rook_percentage = 100;
-        }
-        if (white_bispo_percentage > 100)
-        {
-            point = white_bispo_percentage - 100;
-            white_bispo_percentage = 100;
-        }
-        if (white_horse_percentage > 100)
-        {
-            point = white_horse_percentage - 100;
-            white_horse_percentage = 100;
-        }
-        if (white_queen_percentage > 100)
-        {
-            point = white_queen_percentage - 100;
-            white_queen_percentage = 100;
-        }
-        if (white_pawn_percentage > 100)
-        {
-            point = white_pawn_percentage - 100;
-            white_pawn_percentage = 100;
-        }
-        if (white_king_percentage > 100)
-        {
-            point = white_king_percentage - 100;
-            white_king_percentage = 100;
-        }
-        if (black_pawn_percentage > 100)
-        {
-            point = black_pawn_percentage - 100;
-            black_pawn_percentage = 100;
-        }
-        if (black_bispo_percentage > 100)
-        {
-            point = black_bispo_percentage - 100;
-            black_bispo_percentage = 100;
-        }
-        if (black_horse_percentage > 100)
-        {
-            point = black_horse_percentage - 100;
-            black_horse_percentage = 100;
-        }
-        if (black_king_percentage > 100)
-        {
-            point = black_king_percentage - 100;
-            black_king_percentage = 100;
-        }
-        if (black_queen_percentage > 100)
-        {
-            point = black_queen_percentage - 100;
-            black_queen_percentage = 100;
-        }
-        if (black_rook_percentage > 100)
-        {
-            point = black_rook_percentage - 100;
-            black_rook_percentage = 100;
-        }
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Enemy")
@@ -273,131 +95,46 @@ public class Player : MonoBehaviour
             enemy.Enemy_hp -= att;
         }
     }
-    private void Skill(string Figure_type)
+    void UpdateHealthBar()
     {
-        if (Figure_type == "pawn")
-        {
-            PC.speedMultiplier = 10f;
-            hp = hp + 0.00001;
-            PC.jumpHeight = 200f;
-            PC.moveSpeed = 10;
-        }
-        if (Figure_type == "king")
-        {
-            hp = hp + 0.0040;
-        }
-        if (Figure_type == "queen")
-        {
-            hp = hp + 0.0030;
-        }
-        if (Figure_type == "horse")
-        {
-            PC.jumpHeight = 2000f;
-            PC.speedMultiplier = 2f;
-            hp = hp + 0.0010;
-            PC.moveSpeed = 10;
-        }
-        if (Figure_type == "rook")
-        {
-            hp = hp + 0.0020;
-        }
-        if (Figure_type == "bispo")
-        {
-            PC.speedMultiplier = 2f;
-            hp = hp + 0.0010;
-            PC.jumpHeight = 200f;
-            PC.moveSpeed = 15;
-        }
+        playerslider.value = hp;
     }
-    private void Skill2(string Figure_type)
+    private void RangedAttack()
     {
-        if (Figure_type == "pawn")
+        if(enemy!=null)
         {
-            if (is_it_white == true)
+        if (projectilePrefab != null)
+        {
+            GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+            Rigidbody rb = projectile.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                PC.speedMultiplier = 50;
-                hp = hp + 0.00001 * white_pawn_percentage % 10;
+                Vector3 direction = (enemy.transform.position - transform.position).normalized;
+                rb.velocity = direction * projectileSpeed;
             }
-            if (is_it_black == true)
-            {
-                PC.speedMultiplier = 50;
-                hp = hp + 0.00001 * black_pawn_percentage % 10;
-            }
+        }   
         }
-        if (Figure_type == "king")
-        {
-            if (is_it_white == true)
-            {
-                hp = hp + 0.00007 * white_king_percentage % 10;
-            }
-            if (is_it_black == true)
-            {
-                hp = hp + 0.00007 * black_king_percentage % 10;
-            }
-        }
-        if (Figure_type == "queen")
-        {
-            if (is_it_white == true)
-            {
-                hp = hp + 0.00006 * white_queen_percentage % 10;
-            }
-            if (is_it_black == true)
-            {
-                hp = hp + 0.00006 * black_queen_percentage % 10;
-            }
-        }
-        if (Figure_type == "horse")
-        {
-            if (is_it_white == true)
-            {
-                PC.jumpHeight = 4000f;
-                hp = hp + 0.00002 * white_horse_percentage % 10;
-            }
-            if (is_it_black == true)
-            {
-                PC.jumpHeight = 4000f;
-                hp = hp + 0.00002 * black_horse_percentage % 10;
-            }
-        }
-        if (Figure_type == "rook")
-        {
-            if (is_it_white == true)
-            {
-                hp = hp + 0.00005 * white_rook_percentage % 10;
-            }
-            if (is_it_black == true)
-            {
-                hp = hp + 0.00005 * black_rook_percentage % 10;
-            }
 
-        }
-        if (Figure_type == "bispo")
-        {
-            if (is_it_white == true)
-            {
-                PC.moveSpeed = 25;
-                hp = hp + 0.00004 * white_bispo_percentage % 10;
-            }
-            if (is_it_black == true)
-            {
-                PC.moveSpeed = 25;
-                hp = hp + 0.00004 * black_bispo_percentage % 10;
-            }
-
-        }
     }
-    private void ShootArrow()
+    public PlayerSaveData GetSaveData()
     {
-        if (Time.time - lastShotTime >= shotDelay)
+        return new PlayerSaveData
         {
-            float currentForce = Mathf.Lerp(0f, maxForce, timeSinceMouseDown);
-            GameObject arro = Instantiate(arrow, arrowSpawnPoint.position, Quaternion.LookRotation(cameraTransform.forward));
-            Rigidbody arrowRigidbody = arro.GetComponent<Rigidbody>();
-            arrowRigidbody.AddForce(cameraTransform.forward * currentForce, ForceMode.Impulse);
-            lastShotTime = Time.time;
-            timeSinceMouseDown = 0f;
-        }
+            position = transform.position,
+            hp = this.hp,
+        };
     }
+
+    public void LoadData(PlayerSaveData data)
+    {
+        transform.position = data.position;
+        hp = data.hp;
+        UpdateHealthUI();
+    }
+        private void UpdateHealthUI()
+    {
+        if (healthSlider != null)
+            healthSlider.value = (float)hp / Maxhp;
+    }
+
 }
-
-

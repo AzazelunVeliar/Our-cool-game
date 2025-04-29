@@ -1,39 +1,63 @@
-
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
+using System.Collections;
 
 public class EnemyAI : MonoBehaviour
 {
-    private UnityEngine.AI.NavMeshAgent agent;
+    public float detectionRadius = 50f;
+    public float attackRange = 5f;
+    public float moveSpeed = 15f;
+    public float attackRadius = 5f;
+    public int Enemy_attack = 10;
     public Transform player;
-    float y = 0f;
-    float z = 0f;
-    private Enemy enemy;
-    float detectionRadius = 10f;
+    public Animator animator;
+    public bool canAttack = true;
+    private float attackCooldown = 3f;
 
-    void Start()
+    private void Update()
     {
-        agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-        CapsuleCollider capsuleCollider = GetComponent<CapsuleCollider>();
-    }
-
-    void Update()
-    {
-        agent.destination = player.position;
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRadius);
-        foreach (var hitCollider in hitColliders)
+        if (player != null)
         {
-            Enemy enemy = hitCollider.GetComponent<Enemy>();
-            if (enemy != null && (enemy.Figure_type_enemy == "wp" || enemy.Figure_type_enemy == "bp" || enemy.Figure_type_enemy == "white_pawn" || enemy.Figure_type_enemy == "black_pawn"))
+            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+            if (distanceToPlayer <= detectionRadius)
             {
-                Vector3 newPosition = enemy.transform.position;
-                newPosition.y = 0;
-                enemy.transform.position = newPosition;
+                if (distanceToPlayer <= attackRange)
+                {
+                    PerformAttack();
+                }
+                else
+                {
+                    MoveTowardsPlayer();
+                }
             }
         }
-        //transform.rotation = Quaternion.Euler(-90, y, z);
-        agent.updateRotation = false;
+    }
+
+    private void MoveTowardsPlayer()
+    {
+        Vector3 direction = (player.position - transform.position).normalized;
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * moveSpeed);
+
+        transform.position += direction * moveSpeed * Time.deltaTime;
+    }
+
+    private void PerformAttack()
+    {
+        if (canAttack && Vector3.Distance(transform.position, player.position) <= attackRadius)
+        {
+            canAttack = false;
+            animator.SetTrigger("Punching");
+            player.GetComponent<Player>().hp -= Enemy_attack;
+
+            StartCoroutine(ResetAttackCooldown());
+        }
+    }
+
+    private IEnumerator ResetAttackCooldown()
+    {
+        yield return new WaitForSeconds(attackCooldown);
+        canAttack = true;
     }
 }
