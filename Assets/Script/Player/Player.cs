@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
+    public int HP;
+    public int MP;
+
     public double Maxhp;
     public double Stamina;
     public double hp;
@@ -256,6 +259,8 @@ public class Player : MonoBehaviour
             point = black_rook_percentage - 100;
             black_rook_percentage = 100;
         }
+        HP = (int)hp;
+        MP = (int)Stamina;
     }
 
     private void OnTriggerEnter(Collider other)
