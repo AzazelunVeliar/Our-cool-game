@@ -3,66 +3,69 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.AI;
 using UnityEngine.UI;
-[System.Serializable]
-public class PlayerSaveData
-{
-    public Vector3 position;
-    public int hp;
-}
+
 public class Player : MonoBehaviour
 {
+    public int HP;
+    public int MP;
+
     public int Maxhp;
     public double Stamina;
     public int hp;
     public int att;
     public int matt;
     private Animator animator;
+
     private Enemy enemy;
     private PlayerController PC;
     private bool Attacking;
-    private float meleeAttackCooldown = 1.2f;
+    public Transform cameraTransform;
+    private float timeSinceMouseDown = 0f;
+    private float meleeAttackCooldown = 1.2f; // ����� ����� �������
     private float lastMeleeAttackTime = 0f;
-    public Slider playerslider;
-    public GameObject projectilePrefab;
-    public float projectileSpeed = 10f;
     private float rangedAttackCooldown = 2f;
     private float lastRangedAttackTime = 0f;
-    public Slider healthSlider;
-
+    public GameObject projectilePrefab;
+    public float projectileSpeed = 10f;
+    public Slider playerslider;
+    public Slider playerslider2;
     void Start()
     {
         animator = GetComponent<Animator>();
+        Maxhp = hp;
         PC = GetComponent<PlayerController>();
     }
     void Update()
     {
-        UpdateHealthBar();
+        enemy=FindObjectOfType<Enemy>();
+        playerslider.value = hp;
+        playerslider2.value = (int)Stamina;
+        if (Input.GetMouseButtonUp(0))
+        {
+            timeSinceMouseDown = 0f;
+
+        }
         if (Input.GetMouseButtonDown(0))
         {
             animator.SetBool("Punching", true);
-            if (Attacking && Time.time - lastMeleeAttackTime >= meleeAttackCooldown)
-            {
-                Attack(enemy);
-                lastMeleeAttackTime = Time.time;
-            }
         }
         else
         {
             animator.SetBool("Punching", false);
         }
-        if (Input.GetMouseButtonDown(1) && Time.time - lastRangedAttackTime >= rangedAttackCooldown) // Added cooldown check
+        if (Input.GetMouseButtonDown(1) && Time.time - lastRangedAttackTime >= rangedAttackCooldown&& MP!=0)
         {
             animator.SetBool("Shooting", true);
             RangedAttack();
-            lastRangedAttackTime = Time.time; // Update the last attack time
+            Stamina=Stamina-20;
+            lastRangedAttackTime = Time.time;
         }
         else
         {
             animator.SetBool("Shooting", false);
         }
-        if (hp <= 0)
+        if(hp<=0)
         {
             SceneManager.LoadScene("Restart");
         }
@@ -71,6 +74,16 @@ public class Player : MonoBehaviour
         if (Stamina < 0) { Stamina = 0; }
         Stamina = Stamina + 0.01;
         if (Stamina > 100) { Stamina = 100; }
+        if (Input.GetMouseButtonDown(0) && Attacking)
+        {
+            if (enemy != null && Time.time - lastMeleeAttackTime >= meleeAttackCooldown)
+            {
+                Attack(enemy);
+                lastMeleeAttackTime = Time.time;
+            }
+        }
+        HP = hp;
+        MP = (int)Stamina;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -95,11 +108,7 @@ public class Player : MonoBehaviour
             enemy.Enemy_hp -= att;
         }
     }
-    void UpdateHealthBar()
-    {
-        playerslider.value = hp;
-    }
-    private void RangedAttack()
+        private void RangedAttack()
     {
         if(enemy!=null)
         {
@@ -114,27 +123,7 @@ public class Player : MonoBehaviour
             }
         }   
         }
-
     }
-    public PlayerSaveData GetSaveData()
-    {
-        return new PlayerSaveData
-        {
-            position = transform.position,
-            hp = this.hp,
-        };
-    }
-
-    public void LoadData(PlayerSaveData data)
-    {
-        transform.position = data.position;
-        hp = data.hp;
-        UpdateHealthUI();
-    }
-        private void UpdateHealthUI()
-    {
-        if (healthSlider != null)
-            healthSlider.value = (float)hp / Maxhp;
-    }
-
 }
+
+

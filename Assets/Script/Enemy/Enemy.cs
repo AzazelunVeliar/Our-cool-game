@@ -10,17 +10,18 @@ public class Enemy : MonoBehaviour
     public int Enemy_hp = 100;
     public int Enemy_maxhp = 100;
     public int Enemy_attack = 20;
+    public float maxStamina = 100f;
+    public float currentStamina;
+    public float staminaRecoveryRate = 10f;
+    public float staminaRecoveryDelay = 2f;
     private NavMeshAgent agent;
     public float attackRadius = 2f;
     private bool canAttack = true;
     private float attackCooldown = 3f;
     private Player player;
-    public float jumpForce;
     private Rigidbody rb;
     private Animator animator;
     public Slider enemyslider;
-    public string enemyID;
-    public Slider healthSlider;
 
     void Start()
     {
@@ -43,26 +44,4 @@ public class Enemy : MonoBehaviour
     {
         Update();
     }
-    public EnemyData GetSaveData()
-{
-    return new EnemyData
-    {
-        enemyID = this.enemyID,
-        position = transform.position,
-        hp = Enemy_hp
-    };
-}
-
-public void LoadData(EnemyData data)
-{
-    transform.position = data.position;
-    Enemy_hp = data.hp;
-    UpdateHealthUI();
-}
-    private void UpdateHealthUI()
-    {
-        if (healthSlider != null)
-            healthSlider.value = (float)Enemy_hp / Enemy_maxhp;
-    }
-
 }

@@ -11,7 +11,18 @@ public class Exit : MonoBehaviour
     }
     public void Restart()
     {
-        SceneManager.LoadScene("Game");
 
+        SceneManager.LoadScene("Main Menu");
+
+    }
+    void Start()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+    void Update()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 }
