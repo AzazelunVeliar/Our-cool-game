@@ -16,7 +16,7 @@ public enum BossState
 public class BossAI: MonoBehaviour
 {
     [Header("Refs")]
-    public Animator animator;       // заполните в инспекторе или найдите в Awake
+    public Animator animator;
     public Transform player;
 
     [Header("Stats")]
