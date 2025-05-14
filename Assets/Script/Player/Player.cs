@@ -38,7 +38,6 @@ public class Player : MonoBehaviour
     }
     void Update()
     {
-        enemy=FindObjectOfType<Enemy>();
         playerslider.value = hp;
         playerslider2.value = (int)Stamina;
         if (Input.GetMouseButtonUp(0))
@@ -108,8 +107,9 @@ public class Player : MonoBehaviour
             enemy.Enemy_hp -= att;
         }
     }
-        private void RangedAttack()
+    private void RangedAttack()
     {
+        enemy=FindObjectOfType<Enemy>();
         if(enemy!=null)
         {
         if (projectilePrefab != null)
