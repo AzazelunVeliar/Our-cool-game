@@ -1,63 +1,130 @@
-using UnityEngine;
-using System.Collections;
 
+using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.UI;
+
+public enum EnemyState
+{
+    Idle,       // Покой
+    Aggro,      // Агрессия (движение к игроку)
+    Attack,     // Атака (ближний бой)
+    Flee        // Бегство (при малом HP)
+}
+
+[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyAI : MonoBehaviour
 {
-    public float detectionRadius = 50f;
-    public float attackRange = 5f;
-    public float moveSpeed = 15f;
-    public float attackRadius = 5f;
-    public int Enemy_attack = 10;
+    [Header("Refs")]
     public Transform player;
+    public Slider healthBar;
     public Animator animator;
-    public bool canAttack = true;
-    private float attackCooldown = 3f;
 
-    private void Update()
+    [Header("Stats")]
+    public int maxHp = 100;
+    public int attackDamage = 20;
+    public float detectionRadius = 15f;
+    public float attackRange = 2f;
+    public float fleeHpThreshold = 30f;
+    public float fleeDistance = 10f;
+    public float attackCooldown = 2f;
+
+    private NavMeshAgent agent;
+    private int currentHp;
+    private EnemyState state;
+    private float lastAttackTime;
+
+    void Start()
     {
-        if (player != null)
-        {
-            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        agent = GetComponent<NavMeshAgent>();
+        currentHp = maxHp;
+        healthBar.maxValue = maxHp;
+        healthBar.value = currentHp;
+        TransitionTo(EnemyState.Idle);
+    }
 
-            if (distanceToPlayer <= detectionRadius)
-            {
-                if (distanceToPlayer <= attackRange)
-                {
-                    PerformAttack();
-                }
-                else
-                {
-                    MoveTowardsPlayer();
-                }
-            }
+    void Update()
+    {
+        switch (state)
+        {
+            case EnemyState.Idle: StateIdle(); break;
+            case EnemyState.Aggro: StateAggro(); break;
+            case EnemyState.Attack: StateAttack(); break;
+            case EnemyState.Flee: StateFlee(); break;
         }
     }
 
-    private void MoveTowardsPlayer()
+    #region States
+    void StateIdle()
     {
-        Vector3 direction = (player.position - transform.position).normalized;
-
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * moveSpeed);
-
-        transform.position += direction * moveSpeed * Time.deltaTime;
+        animator.Play("Idle");
+        float dist = Vector3.Distance(transform.position, player.position);
+        if (dist <= detectionRadius && currentHp > fleeHpThreshold)
+            TransitionTo(EnemyState.Aggro);
+        else if (currentHp <= fleeHpThreshold)
+            TransitionTo(EnemyState.Flee);
     }
 
-    private void PerformAttack()
+    void StateAggro()
     {
-        if (canAttack && Vector3.Distance(transform.position, player.position) <= attackRadius)
+        animator.Play("Running");
+        agent.isStopped = false;
+        agent.SetDestination(player.position);
+
+        float dist = Vector3.Distance(transform.position, player.position);
+        if (dist <= attackRange)
+            TransitionTo(EnemyState.Attack);
+        else if (currentHp <= fleeHpThreshold)
+            TransitionTo(EnemyState.Flee);
+    }
+
+    void StateAttack()
+    {
+        agent.isStopped = true;
+        transform.LookAt(player);
+        animator.Play("Punching");
+
+        if (Time.time - lastAttackTime >= attackCooldown)
         {
-            canAttack = false;
-            animator.SetTrigger("Punching");
-            player.GetComponent<Player>().hp -= Enemy_attack;
-
-            StartCoroutine(ResetAttackCooldown());
+            // наносим урон
+            var pl = player.GetComponent<Player>();
+            if (pl != null) pl.hp -= attackDamage;
+            lastAttackTime = Time.time;
         }
+
+        float dist = Vector3.Distance(transform.position, player.position);
+        if (dist > attackRange)
+            TransitionTo(EnemyState.Aggro);
+        else if (currentHp <= fleeHpThreshold)
+            TransitionTo(EnemyState.Flee);
     }
 
-    private IEnumerator ResetAttackCooldown()
+    void StateFlee()
     {
-        yield return new WaitForSeconds(attackCooldown);
-        canAttack = true;
+        animator.Play("Running");
+        agent.isStopped = false;
+        Vector3 dir = (transform.position - player.position).normalized;
+        agent.SetDestination(transform.position + dir * fleeDistance);
+
+        float dist = Vector3.Distance(transform.position, player.position);
+        if (dist >= detectionRadius)
+            TransitionTo(EnemyState.Idle);
+    }
+    #endregion
+
+    void TransitionTo(EnemyState newState)
+    {
+        state = newState;
+        // здесь можно вызвать OnEnter, OnExit-подход, если нужно
+    }
+
+    // Внешний метод для получения урона
+    public void TakeDamage(int dmg)
+    {
+        currentHp = Mathf.Max(0, currentHp - dmg);
+        healthBar.value = currentHp;
+        if (currentHp == 0)
+            Destroy(gameObject);
+        else if (state != EnemyState.Flee && currentHp <= fleeHpThreshold)
+            TransitionTo(EnemyState.Flee);
     }
 }
